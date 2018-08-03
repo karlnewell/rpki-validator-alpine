@@ -14,6 +14,7 @@ rtr-server container connects to rpki3-alpine validator on host.docker.internal
 rtr server rpki-rtr-server.sh modified with the following to support host.docker.internal on a Linux host.
 
 #Fixes Linux ability to call host.docker.internal
+
 function fix_linux_internal_host() {
   DOCKER_INTERNAL_HOST="host.docker.internal"
 
