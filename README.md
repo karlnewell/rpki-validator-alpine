@@ -1,5 +1,5 @@
 
-RIPE RPKI 3 validator service running in docker
+RIPE RPKI 3 validator service running in docker.  You will also need the rpki 3 rtr-server container from my other repository.
 
 docker run -d -p 8323:8323 -p 8081:8081 rpki3-rtr-server-alpine
 docker run -d -p 8088:8080 rpki3-alpine
