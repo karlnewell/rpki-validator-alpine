@@ -1,28 +1,27 @@
 
+# rpki-validator-alpine
+
+This is not the official RIPE RPKI release.  This is a modified version to play nice with a Docker deployment.  
+
+Requires both RTR-SEVER and VALIDATOR containers below.  
+
+Docker Hub:
+https://hub.docker.com/r/toomscj7/rpki3-rtr-server-alpine/
 https://hub.docker.com/r/toomscj7/rpki3-validator-alpine/
+ 
+GitHub:
+https://github.com/sethgarrett/rpki-rtr-server-alpine
+https://github.com/sethgarrett/rpki-validator-alpine
 
-RIPE RPKI 3 validator service running in docker.  You will also need the rpki 3 rtr-server container from my other repository (https://github.com/sethgarrett/rpki-rtr-server-alpine/).
+docker run -d -p 8080:8080 toomscj7/rpki3-validator-alpine
 
-docker run -d -p 8323:8323 -p 8081:8081 toomscj7/rpki3-rtr-server-alpine
+# Localhost & ARIN TAL
+Both containers set to listen on localhost only by default. RPKI Validator can be changed at docker run to listen on all interfaces via env variable (listen_any=true).  Ensure you have proper security in place before using this option.  This gets changed via if statement in rpki-validator-3.sh.  RIPE advises to use nginx or apache proxy to secure 8080.  
 
-docker run -d -p 8088:8080 toomscj7/rpki3-validator-alpine
+docker run -d -e listen_any=true -p 8080:8080 toomscj7/rpki3-validator-alpine
 
-Both services set to listen on all interfaces.  Configured to be ran on the same docker host.  
+The ARIN TAL is not installed by default.  This can be set to be pulled at run time with the get_arin_tal=true env variable.  Official site located here: https://www.arin.net/resources/rpki/tal.html.  You will need to read the conditions of their relying party agreement.  
 
-rtr-server container connects to rpki3-alpine validator on host.docker.internal
+docker run -d -e listen_any=true -e get_arin_tal=true -p 8080:8080 toomscj7/rpki3-validator-alpine
 
-rtr server rpki-rtr-server.sh modified with the following to support host.docker.internal on a Linux host.
-
-#Fixes Linux ability to call host.docker.internal
-
-function fix_linux_internal_host() {
-  DOCKER_INTERNAL_HOST="host.docker.internal"
-
-  if ! grep $DOCKER_INTERNAL_HOST /etc/hosts > /dev/null ; then
-    DOCKER_INTERNAL_IP=`/sbin/ip route|awk '/default/ { print $3 }'`
-    echo -e "$DOCKER_INTERNAL_IP\t$DOCKER_INTERNAL_HOST" | tee -a /etc/hosts > /dev/null
-    echo 'Added $DOCKER_INTERNAL_HOST to hosts /etc/hosts'
-  fi
-}
-
-fix_linux_internal_host
+rtr-server container connects to rpki3-validator-alpine on host.docker.internal.  
