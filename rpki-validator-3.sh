@@ -39,6 +39,9 @@ if [ "$get_arin_tal" = true ]; then
   wget https://www.arin.net/resources/rpki/arin-ripevalidator.tal -O /usr/src/rpki-valid/rpki-validator-3.0-312/preconfigured-tals/arin-ripevalidator.tal
 fi
 
+if [ "$use_arin_ote_tal" = true ]; then
+  cp /usr/src/rpki-valid/rpki-validator-3.0-312/arin-ote.tal /usr/src/rpki-valid/rpki-validator-3.0-312/preconfigured-tals/
+fi
 
 function warn {
     echo -e "[ warning ] $1"
@@ -88,4 +91,3 @@ parse_config_line "jvm.memory.maximum" JVM_XMX
 MEM_OPTIONS="-Xms$JVM_XMS -Xmx$JVM_XMX"
 
 exec ${JAVA_CMD} ${MEM_OPTIONS} -Dspring.config.location="classpath:/application.properties,file:${CONFIG_DIR}/application-defaults.properties,file:${CONFIG_FILE}" -jar "${JAR}"
-
