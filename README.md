@@ -20,7 +20,11 @@ Both containers set to listen on localhost only by default. RPKI Validator can b
 
 ```docker run -d -e listen_any=true -p 8080:8080 toomscj7/rpki3-validator-alpine```
 
-The ARIN TAL is not installed by default.  This can be set to be pulled at run time with the get_arin_tal=true env variable.  Official site located here: https://www.arin.net/resources/rpki/tal.html.  You will need to read the conditions of their relying party agreement.  
+The ARIN TAL is not installed by default.  This can be set to be pulled at run time with the `get_arin_tal=true` env variable.  
+
+Attention: This package requires the download of the ARIN TAL and agreement to the [ARIN Relying Party Agreement (RPA)](https://www.arin.net/resources/manage/rpki/rpa.pdf).
+
+By using `get_arin_tal=true`, you are agreeing to the ARIN RPA.  
 
 ```docker run -d -e listen_any=true -e get_arin_tal=true -p 8080:8080 toomscj7/rpki3-validator-alpine```
 
