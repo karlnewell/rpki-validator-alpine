@@ -30,17 +30,17 @@
 #
 
 if [ "$listen_any" = true ]; then 
-  echo "#server.address=localhost" >> /usr/src/rpki-valid/rpki-validator-3.0-312/conf/application.properties
+  echo "#server.address=localhost" >> /var/lib/rpki-validator-3/conf/application.properties
 else 
-  echo "server.address=localhost" >> /usr/src/rpki-valid/rpki-validator-3.0-312/conf/application.properties 
+  echo "server.address=localhost" >> /var/lib/rpki-validator-3/conf/application.properties 
 fi
 
 if [ "$get_arin_tal" = true ]; then
-  wget https://www.arin.net/resources/rpki/arin-ripevalidator.tal -O /usr/src/rpki-valid/rpki-validator-3.0-312/preconfigured-tals/arin-ripevalidator.tal
+  wget https://www.arin.net/resources/manage/rpki/arin-ripevalidator.tal -O /var/lib/rpki-validator-3/preconfigured-tals/arin-ripevalidator.tal
 fi
 
 if [ "$use_arin_ote_tal" = true ]; then
-  cp /usr/src/rpki-valid/rpki-validator-3.0-312/arin-ote.tal /usr/src/rpki-valid/rpki-validator-3.0-312/preconfigured-tals/
+  cp /var/lib/rpki-validator-3/arin-ote.tal /var/lib/rpki-validator-3/preconfigured-tals/
 fi
 
 function warn {
@@ -74,20 +74,25 @@ JAR=${JAR:-"./lib/rpki-validator-3.jar"}
 CONFIG_DIR=${CONFIG_DIR:-"./conf"}
 
 CONFIG_FILE="${CONFIG_DIR}/application.properties"
+CONFIG_DEFAULT_FILE="${CONFIG_DIR}/application-defaults.properties"
 
 function parse_config_line {
     local CONFIG_KEY="$1"
-    local VALUE=`grep "^$CONFIG_KEY" "$CONFIG_FILE" | sed 's/#.*//g' | awk -F "=" '{ print $2 }'`
+    local VALUE=`grep "^$CONFIG_KEY" "$CONFIG_DEFAULT_FILE" | sed 's/#.*//g' | awk -F "=" '{ print $2 }'`
 
     if [ -z "$VALUE" ]; then
-        error_exit "Cannot find value for: $CONFIG_KEY in config-file: $CONFIG_FILE"
+        VALUE=`grep "^$CONFIG_KEY" "$CONFIG_FILE" | sed 's/#.*//g' | awk -F "=" '{ print $2 }'`
+    fi
+
+    if [ -z "$VALUE" ]; then
+        error_exit "Cannot find value for: $CONFIG_KEY in config-files: $CONFIG_DEFAULT_FILE, $CONFIG_FILE"
     fi
     eval "$2=$VALUE"
 }
 
-parse_config_line "jvm.memory.initial" JVM_XMS
-parse_config_line "jvm.memory.maximum" JVM_XMX
+parse_config_line "jvm.mem.initial" JVM_XMS
+parse_config_line "jvm.mem.maximum" JVM_XMX
 
-MEM_OPTIONS="-Xms$JVM_XMS -Xmx$JVM_XMX"
+MEM_OPTIONS="-Xms$JVM_XMS -Xmx$JVM_XMX -XX:+ExitOnOutOfMemoryError"
 
 exec ${JAVA_CMD} ${MEM_OPTIONS} -Dspring.config.location="classpath:/application.properties,file:${CONFIG_DIR}/application-defaults.properties,file:${CONFIG_FILE}" -jar "${JAR}"
